@@ -5,55 +5,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Badminton Pro Manager | Cloud Edition</title>
     <style>
+        /* --- Dynamic Theme Variables --- */
         :root {
+            /* Light Mode (Default) */
             --primary: #2c3e50;
             --accent: #27ae60;
             --danger: #e74c3c;
             --bg: #ecf0f1;
-            --white: #ffffff;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --input-border: #dddddd;
+            --secondary-btn: #95a5a6;
+            --duo-bg: #f9f9f9;
         }
+
+        [data-theme="dark"] {
+            /* Dark Mode */
+            --primary: #1a1a1a;
+            --accent: #2ecc71;
+            --danger: #ff4757;
+            --bg: #121212;
+            --card-bg: #1e1e1e;
+            --text: #f1f1f1;
+            --input-border: #444444;
+            --secondary-btn: #4a4a4a;
+            --duo-bg: #2d2d2d;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             max-width: 900px;
             margin: 0 auto;
             padding: 20px;
             background-color: var(--bg);
-            color: var(--primary);
+            color: var(--text);
+            transition: background 0.3s, color 0.3s;
         }
-        /* Login Overlay */
+
+        /* --- Theme Switcher UI --- */
+        .theme-controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .theme-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text);
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            flex: none;
+        }
+        .theme-btn.active {
+            border-color: var(--accent);
+            background: var(--accent);
+            color: white;
+        }
+
+        /* --- Existing Styles Updated for Variables --- */
         #login-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: var(--primary);
             z-index: 2000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            box-sizing: border-box;
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px; box-sizing: border-box;
         }
         .login-card {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
+            background: var(--card-bg);
+            padding: 30px; border-radius: 12px;
+            width: 100%; max-width: 400px; text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            color: var(--text);
         }
         .login-card input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            box-sizing: border-box;
+            width: 100%; padding: 12px; margin: 10px 0;
+            border: 1px solid var(--input-border); border-radius: 6px;
+            background: var(--bg); color: var(--text);
         }
         
         .card {
-            background: var(--white);
-            padding: 25px;
-            border-radius: 12px;
+            background: var(--card-bg);
+            padding: 25px; border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
@@ -61,10 +97,236 @@
         
         textarea {
             width: 100%; height: 80px; padding: 12px;
-            border: 2px solid #ddd; border-radius: 8px;
-            box-sizing: border-box; font-size: 14px; margin-bottom: 10px;
+            border: 2px solid var(--input-border); border-radius: 8px;
+            background: var(--bg); color: var(--text);
+            font-size: 14px; margin-bottom: 10px;
         }
         .controls-row { display: flex; gap: 10px; margin-bottom: 20px; }
+        button {
+            flex: 1; padding: 12px; background-color: var(--accent);
+            color: white; border: none; border-radius: 6px;
+            cursor: pointer; font-size: 16px; font-weight: bold;
+        }
+        button.secondary { background-color: var(--secondary-btn); }
+
+        #duo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px; margin-bottom: 15px;
+        }
+        .duo-card {
+            background: var(--duo-bg); border: 2px solid var(--input-border);
+            padding: 10px; border-radius: 8px; text-align: center; cursor: pointer;
+            color: var(--text);
+        }
+        .duo-card.selected { border-color: var(--accent); background: rgba(46, 204, 113, 0.2); }
+
+        .scoreboard {
+            display: flex; justify-content: space-around;
+            align-items: center; background: var(--bg);
+            padding: 20px; border-radius: 10px; border: 2px solid var(--input-border);
+        }
+        .score-display { font-size: 3.5rem; font-weight: 800; margin: 10px 0; }
+        .team-input {
+            font-size: 1.1rem; font-weight: bold; text-align: center;
+            border: none; border-bottom: 2px solid var(--input-border); 
+            width: 100%; background: transparent; color: var(--text);
+        }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; color: var(--text); }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--input-border); }
+        th { background-color: var(--primary); color: white; }
+        .win-tag { color: var(--accent); font-weight: bold; }
+        .waitlist-alert { background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="theme-controls">
+        <button class="theme-btn" onclick="setTheme('light')" id="btn-light">☀️ Light</button>
+        <button class="theme-btn" onclick="setTheme('dark')" id="btn-dark">🌙 Dark</button>
+        <button class="theme-btn" onclick="setTheme('auto')" id="btn-auto">🔄 Auto</button>
+    </div>
+
+    <div id="login-overlay">
+        <div class="login-card">
+            <h2>🏸 Pro Manager Login</h2>
+            <p>Enter admin credentials</p>
+            <input type="email" id="loginEmail" placeholder="Admin Email">
+            <input type="password" id="loginPass" placeholder="Password">
+            <button id="btnLogin">Login to Dashboard</button>
+            <p id="loginError" style="color: var(--danger); font-size: 0.8rem; margin-top:10px;"></p>
+        </div>
+    </div>
+
+    <h1>🏸 Badminton Pro Manager</h1>
+
+    <div class="card">
+        <h2>1. Generate Pairs</h2>
+        <textarea id="names" placeholder="John, Sarah, Mike, Anna..."></textarea>
+        <div class="controls-row">
+            <button id="generate">Shuffle & Create Duos</button>
+            <button id="clear" class="secondary">Reset Session</button>
+        </div>
+        <div id="duo-grid"></div>
+        <div id="extra-player"></div>
+    </div>
+
+    <div class="card">
+        <h2>2. Live Match Tracker</h2>
+        <div class="scoreboard">
+            <div class="team">
+                <input type="text" id="teamAName" class="team-input" value="Team A">
+                <div class="score-display" id="scoreA">0</div>
+                <div style="display:flex; gap:5px; justify-content:center;">
+                    <button style="background: var(--danger); width:45px;" onclick="changeScore('A', -1)">-</button>
+                    <button style="background: var(--accent); width:45px;" onclick="changeScore('A', 1)">+</button>
+                </div>
+            </div>
+            <div style="font-weight: bold; opacity: 0.5;">VS</div>
+            <div class="team">
+                <input type="text" id="teamBName" class="team-input" value="Team B">
+                <div class="score-display" id="scoreB">0</div>
+                <div style="display:flex; gap:5px; justify-content:center;">
+                    <button style="background: var(--danger); width:45px;" onclick="changeScore('B', -1)">-</button>
+                    <button style="background: var(--accent); width:45px;" onclick="changeScore('B', 1)">+</button>
+                </div>
+            </div>
+        </div>
+        <button id="manualSave" class="secondary" style="margin-top:15px; width:100%;">Save Match Manually</button>
+    </div>
+
+    <div class="card">
+        <h2>3. Global Session History</h2>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr><th>Time</th><th>Matchup</th><th>Score</th><th>Winner</th></tr>
+                </thead>
+                <tbody id="historyBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        /* --- THEME LOGIC --- */
+        window.setTheme = (mode) => {
+            const html = document.documentElement;
+            const btns = document.querySelectorAll('.theme-btn');
+            btns.forEach(b => b.classList.remove('active'));
+
+            if (mode === 'auto') {
+                const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                html.setAttribute('data-theme', isDark ? 'dark' : 'light');
+                document.getElementById('btn-auto').classList.add('active');
+                localStorage.setItem('theme-pref', 'auto');
+            } else {
+                html.setAttribute('data-theme', mode);
+                document.getElementById(`btn-${mode}`).classList.add('active');
+                localStorage.setItem('theme-pref', mode);
+            }
+        };
+
+        // Initialize theme on load
+        const savedTheme = localStorage.getItem('theme-pref') || 'auto';
+        setTheme(savedTheme);
+
+        /* --- FIREBASE INTEGRATION --- */
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAR7u_Zpb14QmT1wVxUCTzxdbfliobthFQ",
+            authDomain: "badminton-pro-ss.firebaseapp.com",
+            projectId: "badminton-pro-ss",
+            storageBucket: "badminton-pro-ss.firebasestorage.app",
+            messagingSenderId: "293937701170",
+            appId: "1:293937701170:web:40e1d3be4392a35c6c372b",
+            measurementId: "G-Y7N6Q70QP4"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Auth handling
+        document.getElementById('btnLogin').addEventListener('click', async () => {
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPass').value;
+            try { await signInWithEmailAndPassword(auth, email, pass); } 
+            catch (e) { document.getElementById('loginError').innerText = "Login Failed"; }
+        });
+
+        onAuthStateChanged(auth, (user) => {
+            document.getElementById('login-overlay').style.display = user ? 'none' : 'flex';
+        });
+
+        // Scoring & Game Logic
+        let scoreA = 0, scoreB = 0;
+
+        window.changeScore = (team, val) => {
+            if (team === 'A') { scoreA = Math.max(0, scoreA + val); document.getElementById('scoreA').innerText = scoreA; }
+            else { scoreB = Math.max(0, scoreB + val); document.getElementById('scoreB').innerText = scoreB; }
+            if ((scoreA >= 21 || scoreB >= 21) && Math.abs(scoreA - scoreB) >= 2) saveAndReset();
+        };
+
+        async function saveAndReset() {
+            const nA = document.getElementById('teamAName').value;
+            const nB = document.getElementById('teamBName').value;
+            const winner = scoreA > scoreB ? nA : nB;
+            await addDoc(collection(db, "matches"), {
+                teamA: nA, teamB: nB, scoreA, scoreB, winner, timestamp: serverTimestamp()
+            });
+            scoreA = 0; scoreB = 0;
+            document.getElementById('scoreA').innerText = 0;
+            document.getElementById('scoreB').innerText = 0;
+            document.getElementById('teamAName').value = "Team A";
+            document.getElementById('teamBName').value = "Team B";
+            document.querySelectorAll('.duo-card').forEach(c => c.classList.remove('selected'));
+        }
+
+        document.getElementById('manualSave').onclick = saveAndReset;
+
+        // History Listener
+        const q = query(collection(db, "matches"), orderBy("timestamp", "desc"));
+        onSnapshot(q, (snapshot) => {
+            const tbody = document.getElementById('historyBody');
+            tbody.innerHTML = '';
+            snapshot.forEach((doc) => {
+                const m = doc.data();
+                const time = m.timestamp ? m.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "...";
+                tbody.innerHTML += `<tr><td>${time}</td><td>${m.teamA} vs ${m.teamB}</td><td>${m.scoreA}-${m.scoreB}</td><td class="win-tag">${m.winner}</td></tr>`;
+            });
+        });
+
+        // Pairing Logic
+        document.getElementById('generate').onclick = () => {
+            const names = document.getElementById('names').value.split(/[\n,]+/).map(n => n.trim()).filter(n => n !== "");
+            if (names.length < 2) return;
+            names.sort(() => Math.random() - 0.5);
+            const grid = document.getElementById('duo-grid');
+            grid.innerHTML = '';
+            let wait = names.length % 2 !== 0 ? names.pop() : null;
+            for (let i = 0; i < names.length; i += 2) {
+                const pair = `${names[i]} & ${names[i+1]}`;
+                const card = document.createElement('div');
+                card.className = 'duo-card';
+                card.innerHTML = `<strong>P${(i/2)+1}</strong><br>${pair}`;
+                card.onclick = () => {
+                    if(document.getElementById('teamAName').value === "Team A") document.getElementById('teamAName').value = pair;
+                    else document.getElementById('teamBName').value = pair;
+                    card.classList.add('selected');
+                };
+                grid.appendChild(card);
+            }
+            document.getElementById('extra-player').innerHTML = wait ? `<div class="waitlist-alert">Resting: ${wait}</div>` : '';
+        };
+
+        document.getElementById('clear').onclick = () => location.reload();
+    </script>
+</body>
+</html>
         button {
             flex: 1; padding: 12px; background-color: var(--accent);
             color: white; border: none; border-radius: 6px;
