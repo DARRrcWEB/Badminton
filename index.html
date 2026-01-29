@@ -2,315 +2,396 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Badminton Pro Manager | Cloud Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ACE FLOW | Neural Link</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        /* --- Dynamic Theme Variables --- */
         :root {
-            --primary: #2c3e50; --accent: #27ae60; --danger: #e74c3c;
-            --bg: #ecf0f1; --card-bg: #ffffff; --text: #2c3e50;
-            --input-border: #dddddd; --secondary-btn: #95a5a6; --duo-bg: #f9f9f9;
+            --bg: #020617; --card: #0f172a; --accent: #38bdf8;
+            --secondary: #94a3b8; --danger: #f43f5e; --text: #f8fafc; 
+            --border: #1e293b; --input: #020617; --success: #22c55e;
+            /* Player Colors */
+            --clr-shubham: #ff4d4d;
+            --clr-kushagra: #ffcc00;
+            --clr-vidhu: #2ecc71;
+            --clr-taru: #f39c12;
+            --clr-gaurav: #3498db;
         }
 
-        [data-theme="dark"] {
-            --primary: #1a1a1a; --accent: #2ecc71; --danger: #ff4757;
-            --bg: #121212; --card-bg: #1e1e1e; --text: #f1f1f1;
-            --input-border: #444444; --secondary-btn: #4a4a4a; --duo-bg: #2d2d2d;
+        /* --- VIDEO BACKGROUND STYLES --- */
+        #bg-video {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            min-width: 100%;
+            min-height: 100%;
+            z-index: -2;
+            object-fit: cover;
+            filter: brightness(0.5);
         }
 
-        body { font-family: 'Segoe UI', sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background-color: var(--bg); color: var(--text); transition: 0.3s; }
-        .theme-controls { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px; }
-        .theme-btn { background: var(--card-bg); border: 1px solid var(--input-border); color: var(--text); padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 0.8rem; }
-        .theme-btn.active { border-color: var(--accent); background: var(--accent); color: white; }
+        .video-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle, rgba(2, 6, 23, 0.2) 0%, rgba(2, 6, 23, 0.8) 100%);
+            z-index: -1;
+            pointer-events: none;
+        }
 
-        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .login-card { background: var(--card-bg); padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .login-card input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid var(--input-border); border-radius: 6px; background: var(--bg); color: var(--text); }
+        * { box-sizing: border-box; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; overflow-x: hidden; min-height: 100vh; }
+
+        /* --- AUTH SCREEN --- */
+        #auth-overlay { 
+            position: fixed; inset: 0; background: var(--bg); z-index: 9000; 
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+        }
+        .auth-card { text-align: center; width: 100%; max-width: 400px; animation: fadeInScale 0.8s ease; }
+        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
         
-        .card { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h1, h2 { text-align: center; margin-top: 0; }
+        .pin-dot-container { display: flex; gap: 20px; justify-content: center; margin-top: 40px; }
+        .pin-dot { width: 18px; height: 18px; border-radius: 4px; border: 2px solid var(--border); transform: rotate(45deg); }
+        .pin-dot.active { 
+            background: var(--accent); border-color: var(--accent); 
+            box-shadow: 0 0 20px var(--accent); transform: rotate(45deg) scale(1.2); 
+        }
+
+        /* --- WELCOME SCREEN --- */
+        #welcome-overlay { 
+            display: none; position: fixed; inset: 0; z-index: 9001; 
+            background: #000; align-items: center; justify-content: center; flex-direction: column; 
+        }
+        .welcome-text { 
+            font-family: 'Space Grotesk'; font-size: 3.5rem; font-weight: 800; 
+            background: linear-gradient(to right, #fff, var(--accent), #fff);
+            background-size: 200% auto;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: shine 2s infinite linear, zoomIn 0.5s ease;
+        }
+        @keyframes shine { 0% { background-position: 0%; } 100% { background-position: 200%; } }
+        @keyframes zoomIn { from { transform: scale(2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* --- MAIN APP --- */
+        #main-app { display: none; max-width: 500px; margin: 0 auto; padding-bottom: 50px; }
+        h1, h2, h3 { font-family: 'Space Grotesk'; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
         
-        textarea { width: 100%; height: 80px; padding: 12px; border: 2px solid var(--input-border); border-radius: 8px; background: var(--bg); color: var(--text); margin-bottom: 10px; }
-        .controls-row { display: flex; gap: 10px; margin-bottom: 15px; }
-        button { flex: 1; padding: 12px; background-color: var(--accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; }
-        button.secondary { background-color: var(--secondary-btn); }
-
-        #duo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px; }
-        .duo-card { background: var(--duo-bg); border: 2px solid var(--input-border); padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; color: var(--text); }
-        .duo-card.selected { border-color: var(--accent); background: rgba(46, 204, 113, 0.2); }
-
-        .scoreboard { display: flex; justify-content: space-around; align-items: center; background: var(--bg); padding: 20px; border-radius: 10px; border: 2px solid var(--input-border); }
-        .score-display { font-size: 3.5rem; font-weight: 800; margin: 10px 0; }
-        .team-input { font-size: 1.1rem; font-weight: bold; text-align: center; border: none; border-bottom: 2px solid var(--input-border); width: 100%; background: transparent; color: var(--text); }
+        /* Adjusted Card for Visibility */
+        .card { 
+            background: rgba(15, 23, 42, 0.8); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border); 
+            padding: 24px; 
+            border-radius: 28px; 
+            margin-bottom: 20px; 
+        }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--input-border); }
-        th { background-color: var(--primary); color: white; }
-        .win-tag { color: var(--accent); font-weight: bold; }
-        .waitlist-alert { background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; text-align: center; margin-top: 10px;}
+        /* --- GLASSY PLAYER CHIPS --- */
+        .chip { 
+            background: rgba(255, 255, 255, 0.05); 
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            padding: 10px 14px; border-radius: 12px; font-size: 0.75rem; 
+            cursor: pointer; color: var(--text); display: inline-block; margin: 4px;
+            font-weight: 700;
+        }
 
-        footer { text-align: center; margin-top: 40px; padding: 20px; opacity: 0.8; border-top: 1px solid var(--input-border); }
-        .highlight-name { color: #d4af37; font-weight: bold; text-transform: uppercase; }
+        .chip-shubham { border-color: var(--clr-shubham); box-shadow: 0 0 15px rgba(255, 77, 77, 0.3); color: var(--clr-shubham); }
+        .chip-kushagra { border-color: var(--clr-kushagra); box-shadow: 0 0 15px rgba(255, 204, 0, 0.3); color: var(--clr-kushagra); }
+        .chip-vidhu { border-color: var(--clr-vidhu); box-shadow: 0 0 15px rgba(46, 204, 113, 0.3); color: var(--clr-vidhu); }
+        .chip-taru { border-color: var(--clr-taru); box-shadow: 0 0 15px rgba(243, 156, 18, 0.3); color: var(--clr-taru); }
+        .chip-gaurav { border-color: var(--clr-gaurav); box-shadow: 0 0 15px rgba(52, 152, 219, 0.3); color: var(--clr-gaurav); }
+
+        /* --- COMBAT UI --- */
+        .combat-grid { display: grid; grid-template-columns: 1fr 40px 1fr; align-items: stretch; gap: 12px; }
+        .team-box { padding: 25px 10px; border-radius: 20px; border: 2px solid var(--border); background: rgba(0,0,0,0.3); text-align: center; position: relative; overflow: hidden; }
+        .team-label-input { background:none; border:none; color: var(--accent); text-align:center; width:100%; font-size: 1.2rem; font-weight:800; font-family: 'Space Grotesk'; margin-bottom: 5px; pointer-events: none;}
+
+        .leading-glow { border-color: var(--success) !important; box-shadow: 0 0 30px rgba(34, 197, 94, 0.3); transform: translateY(-5px); }
+        .lead-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--success); color: black; font-size: 0.6rem; font-weight: 900; padding: 2px 10px; border-radius: 10px; display: none; z-index: 10; }
+        .leading-glow .lead-badge { display: block; }
+
+        .score-huge { font-family: 'Space Grotesk'; font-size: 5rem; font-weight: 700; color: var(--text); margin: 5px 0; line-height: 1; height: 80px; display: flex; align-items: center; justify-content: center; }
+        @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideDown { from { transform: translateY(-40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .score-up { animation: slideUp 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); color: var(--accent) !important; }
+        .score-down { animation: slideDown 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); color: var(--danger) !important; }
+
+        /* --- MISC --- */
+        .history-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px 15px; border-radius: 12px; margin-bottom: 8px; font-size: 0.85rem; border: 1px solid var(--border); }
+        .del-btn { color: var(--danger); font-weight: 800; padding: 5px 10px; cursor: pointer; }
+        textarea { width: 100%; background: var(--input); border: 1px solid var(--border); border-radius: 12px; color: white; padding: 15px; font-family: inherit; margin-bottom: 15px; resize: none; }
+        button { padding: 16px; border-radius: 14px; border: none; font-weight: 800; cursor: pointer; background: var(--accent); color: var(--bg); width: 100%; font-size: 0.9rem; }
+        #winner-popup { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.95); z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
     </style>
 </head>
 <body>
 
-    <div class="theme-controls">
-        <button class="theme-btn" onclick="setTheme('light')" id="btn-light">☀️ Light</button>
-        <button class="theme-btn" onclick="setTheme('dark')" id="btn-dark">🌙 Dark</button>
-        <button class="theme-btn" onclick="setTheme('auto')" id="btn-auto">🔄 Auto</button>
-    </div>
+    <video autoplay muted loop id="bg-video">
+        <source src="https://media.istockphoto.com/id/2245081368/video/4k-abstract-lines-background-loopable.mp4?s=mp4-640x640-is&k=20&c=NIFax8A_NZ6IrCNE4n8DfK0Od6MVURyYXDaDsnWn8uI=">
+    </video>
+    <div class="video-overlay"></div>
 
-    <div id="login-overlay">
-        <div class="login-card">
-            <h2>🏸 Admin Login</h2>
-            <input type="email" id="loginEmail" placeholder="Email (admin@test.com)">
-            <input type="password" id="loginPass" placeholder="Password">
-            <button id="btnLoginAction">Login to Dashboard</button>
-            <p id="loginError" style="color: var(--danger); font-size: 0.8rem; margin-top:10px;"></p>
+    <div id="auth-overlay">
+        <div class="auth-card">
+            <h1 style="font-size: 3rem; margin-bottom: 5px; color: white;">ACE <span style="color: var(--accent);">FLOW</span></h1>
+            <p style="color: var(--secondary); letter-spacing: 3px; font-size: 0.7rem;">ENTER ACCESS PROTOCOL</p>
+            <div class="pin-dot-container" id="pinDots">
+                <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+            </div>
+            <input type="password" id="pinInput" pattern="\d*" inputmode="numeric" style="opacity:0; position:absolute;" maxlength="4" autofocus oninput="updateDots()">
         </div>
     </div>
 
-    <h1>🏸 Badminton Pro Manager</h1>
-
-    <div class="card">
-        <h2>1. Generate Teams</h2>
-        <textarea id="names" placeholder="Gatik, Kushagra, Shubham, Yuvraj, John..."></textarea>
-        <div class="controls-row">
-            <button id="generate">Shuffle & Create Teams</button>
-            <button id="clearBtn" class="secondary">Reset Session</button>
-        </div>
-        <div id="duo-grid"></div>
-        <div id="extra-player"></div>
+    <div id="welcome-overlay">
+        <div class="welcome-text">WELCOME TO ACE FLOW</div>
+        <div style="color: var(--accent); letter-spacing: 8px; margin-top: 20px; opacity: 0.5;">AUTHORIZED ACCESS</div>
     </div>
 
-    <div class="card">
-        <h2>2. Live Match Tracker</h2>
-        <div class="controls-row" style="margin-bottom: 10px;">
-            <button class="secondary" id="resetPointsBtn" style="font-size: 0.75rem; padding: 8px;">Reset Points</button>
-            <button class="secondary" id="resetTeamsBtn" style="font-size: 0.75rem; padding: 8px;">Reset Teams</button>
+    <div id="winner-popup" onclick="this.style.display='none'">
+        <div style="text-align: center;">
+            <p style="color: var(--accent); font-weight: 800; letter-spacing: 4px;">VICTORY DECLARED</p>
+            <h1 id="winner-name" style="font-size: 4rem; margin: 20px 0; color: #fff;">-</h1>
+            <p style="opacity: 0.5;">TAP TO DISMISS</p>
         </div>
-        <div class="scoreboard">
-            <div class="team">
-                <input type="text" id="teamAName" class="team-input" value="Team A" readonly>
-                <div class="score-display" id="scoreA">0</div>
-                <div style="display:flex; gap:5px; justify-content:center;">
-                    <button style="background: var(--danger); width:45px;" id="minusA">-</button>
-                    <button style="background: var(--accent); width:45px;" id="plusA">+</button>
+    </div>
+
+    <div id="main-app">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="font-size: 1.2rem; margin:0;">ACE FLOW <span style="font-weight: 400; opacity: 0.5;">v2.0</span></h1>
+            <div id="status-dot" style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; box-shadow: 0 0 10px var(--success);"></div>
+        </div>
+
+        <div class="card">
+            <h2 style="font-size: 0.8rem; opacity: 0.6;">01. SQUAD DEPLOYMENT</h2>
+            <div style="margin-bottom: 15px;">
+                <div class="chip chip-shubham" onclick="addName('Shubham')">+ SHUBHAM</div>
+                <div class="chip chip-kushagra" onclick="addName('Kushagra')">+ KUSHAGRA</div>
+                <div class="chip chip-vidhu" onclick="addName('Vidhu')">+ VIDHU</div>
+                <div class="chip chip-gaurav" onclick="addName('Gaurav')">+ GAURAV</div>
+                <div class="chip chip-taru" onclick="addName('Taru')">+ TARU</div>
+            </div>
+            <textarea id="nameInput" rows="2" placeholder="Enter players (comma separated)..."></textarea>
+            <button onclick="initShuffle()">SHUFFLE DUOS</button>
+            <div id="squad-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top:15px;"></div>
+        </div>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2 style="font-size: 0.8rem; opacity: 0.6;">02. Score Counter </h2>
+                <span onclick="resetMatch()" style="font-size: 0.6rem; color: var(--danger); font-weight: 800; cursor: pointer;">RESET MATCH</span>
+            </div>
+            <div class="combat-grid">
+                <div id="boxA" class="team-box">
+                    <div class="lead-badge">IN LEAD</div>
+                    <input type="text" id="labelA" class="team-label-input" placeholder="TEAM A" readonly>
+                    <div class="score-huge" id="scoreA">00</div>
+                    <div style="display:flex; gap:6px">
+                        <button style="background:var(--border); color:white; flex:1;" onclick="updateScore('A', -1)">-</button>
+                        <button style="flex:2;" onclick="updateScore('A', 1)">+</button>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: center; font-weight: 900; opacity: 0.2;">VS</div>
+                <div id="boxB" class="team-box">
+                    <div class="lead-badge">IN LEAD</div>
+                    <input type="text" id="labelB" class="team-label-input" placeholder="TEAM B" readonly>
+                    <div class="score-huge" id="scoreB">00</div>
+                    <div style="display:flex; gap:6px">
+                        <button style="background:var(--border); color:white; flex:1;" onclick="updateScore('B', -1)">-</button>
+                        <button style="flex:2;" onclick="updateScore('B', 1)">+</button>
+                    </div>
                 </div>
             </div>
-            <div style="font-weight: bold; opacity: 0.5;">VS</div>
-            <div class="team">
-                <input type="text" id="teamBName" class="team-input" value="Team B" readonly>
-                <div class="score-display" id="scoreB">0</div>
-                <div style="display:flex; gap:5px; justify-content:center;">
-                    <button style="background: var(--danger); width:45px;" id="minusB">-</button>
-                    <button style="background: var(--accent); width:45px;" id="plusB">+</button>
-                </div>
-            </div>
+            <button onclick="finalizeCombat()" style="margin-top:20px; background:var(--text); color:var(--bg)">SAVE MATCH RECORD</button>
         </div>
-        <button id="manualSave" class="secondary" style="margin-top:15px; width:100%;">Save Match</button>
-    </div>
 
-    <div class="card">
-        <h2>3. Global Session History</h2>
-        <div style="overflow-x: auto;">
-            <table>
-                <thead>
-                    <tr><th>Time</th><th>Matchup</th><th>Score</th><th>Winner</th></tr>
-                </thead>
-                <tbody id="historyBody"></tbody>
-            </table>
+        <div class="card">
+            <h2 style="font-size: 0.8rem; opacity: 0.6;">03. COMBAT HISTORY</h2>
+            <div id="history-list"></div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid var(--border);">
+            <p style="font-family: 'Space Grotesk'; font-size: 0.7rem; letter-spacing: 4px; color: var(--secondary); margin: 0;">
+                © 2026 PROTOCOL BY <span style="color: var(--accent); font-weight: 800; text-shadow: 0 0 10px var(--accent);">CYPHER</span>
+            </p>
         </div>
     </div>
 
-    <footer>
-        <p>&copy; 2026 Copyright by <span class="highlight-name">Kushagra</span>. All Rights Reserved.</p>
-    </footer>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAR7u_Zpb14QmT1wVxUCTzxdbfliobthFQ",
-            authDomain: "badminton-pro-ss.firebaseapp.com",
-            projectId: "badminton-pro-ss",
-            storageBucket: "badminton-pro-ss.firebasestorage.app",
-            messagingSenderId: "293937701170",
-            appId: "1:293937701170:web:40e1d3be4392a35c6c372b"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        /* --- AUDIO ENGINE --- */
+    <script>
+        let sA = 0, sB = 0;
+        let history = JSON.parse(localStorage.getItem('aceFlowHistory')) || [];
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSound(freq, type = 'sine', duration = 0.1, volume = 0.5) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        function beep(freq, dur=0.1) {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(volume, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+            osc.frequency.value = freq;
+            gain.gain.value = 0.05;
             osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + duration);
+            osc.start(); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + dur);
+            osc.stop(audioCtx.currentTime + dur);
         }
 
-        /* --- AUTHENTICATION FIXED --- */
-        const loginBtn = document.getElementById('btnLoginAction');
-        const loginOverlay = document.getElementById('login-overlay');
-        const loginError = document.getElementById('loginError');
-
-        loginBtn.onclick = async () => {
-            const email = document.getElementById('loginEmail').value;
-            const pass = document.getElementById('loginPass').value;
-            loginError.innerText = "Authenticating...";
-            try {
-                await signInWithEmailAndPassword(auth, email, pass);
-            } catch (error) {
-                loginError.innerText = "Login Failed: " + error.message;
-                playSound(150, 'square', 0.2, 0.5);
+        function updateDots() {
+            const val = document.getElementById('pinInput').value;
+            const dots = document.querySelectorAll('.pin-dot');
+            dots.forEach((dot, i) => dot.classList.toggle('active', i < val.length));
+            
+            if (val === "1234") {
+                beep(800, 0.2);
+                document.getElementById('auth-overlay').style.display = 'none';
+                const welcome = document.getElementById('welcome-overlay');
+                welcome.style.display = 'flex';
+                setTimeout(() => {
+                    welcome.style.opacity = '0';
+                    setTimeout(() => {
+                        welcome.style.display = 'none';
+                        document.getElementById('main-app').style.display = 'block';
+                        renderHistory();
+                    }, 500);
+                }, 2000);
+            } else if (val.length >= 4) {
+                document.getElementById('pinInput').value = "";
+                dots.forEach(dot => dot.classList.remove('active'));
+                beep(100, 0.3);
             }
+        }
+
+        window.addName = (n) => {
+            beep(440, 0.05);
+            const i = document.getElementById('nameInput');
+            if(!i.value.includes(n)) i.value += (i.value ? ', ' : '') + n;
         };
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                loginOverlay.style.display = 'none';
-                playSound(880, 'sine', 0.3, 0.4);
-            } else {
-                loginOverlay.style.display = 'flex';
-            }
-        });
-
-        /* --- APP STATE & LOGIC --- */
-        let scoreA = 0, scoreB = 0;
-
-        const updateUI = () => {
-            document.getElementById('scoreA').innerText = scoreA;
-            document.getElementById('scoreB').innerText = scoreB;
-        };
-
-        const changeScore = (team, val) => {
-            if (val > 0) playSound(880, 'sine', 0.1, 0.6); 
-            else playSound(220, 'triangle', 0.2, 0.6);
-            if (team === 'A') scoreA = Math.max(0, scoreA + val);
-            else scoreB = Math.max(0, scoreB + val);
+        window.updateScore = (team, val) => {
+            const el = document.getElementById('score' + team);
+            el.classList.remove('score-up', 'score-down');
+            void el.offsetWidth; 
+            if(team === 'A') sA = Math.max(0, sA + val); else sB = Math.max(0, sB + val);
+            el.classList.add(val > 0 ? 'score-up' : 'score-down');
+            beep(val > 0 ? 600 : 300, 0.1);
             updateUI();
         };
 
-        const resetScores = () => {
-            playSound(500, 'square', 0.1, 0.5);
-            scoreA = 0; scoreB = 0; updateUI();
-        };
-
-        const resetTeams = () => {
-            playSound(300, 'sawtooth', 0.2, 0.5);
-            document.getElementById('teamAName').value = "Team A";
-            document.getElementById('teamBName').value = "Team B";
-            document.querySelectorAll('.duo-card').forEach(c => c.classList.remove('selected'));
-        };
-
-        async function saveMatch() {
-            const nA = document.getElementById('teamAName').value;
-            const nB = document.getElementById('teamBName').value;
-            if (nA === "Team A" || nB === "Team B") return;
-
-            // Victory Sound
-            playSound(523, 'sine', 0.1, 0.4);
-            setTimeout(() => playSound(659, 'sine', 0.1, 0.4), 100);
-            setTimeout(() => playSound(783, 'sine', 0.3, 0.4), 200);
-
-            const winner = scoreA >= scoreB ? nA : nB;
-            try {
-                await addDoc(collection(db, "matches"), {
-                    teamA: nA, teamB: nB, scoreA, scoreB, winner, timestamp: serverTimestamp()
-                });
-                resetScores(); resetTeams();
-            } catch (e) { console.error(e); }
+        function updateUI() {
+            document.getElementById('scoreA').innerText = sA.toString().padStart(2, '0');
+            document.getElementById('scoreB').innerText = sB.toString().padStart(2, '0');
+            document.getElementById('boxA').classList.toggle('leading-glow', sA > sB);
+            document.getElementById('boxB').classList.toggle('leading-glow', sB > sA);
         }
 
-        /* --- DOM EVENTS --- */
-        document.getElementById('plusA').onclick = () => changeScore('A', 1);
-        document.getElementById('minusA').onclick = () => changeScore('A', -1);
-        document.getElementById('plusB').onclick = () => changeScore('B', 1);
-        document.getElementById('minusB').onclick = () => changeScore('B', -1);
-        document.getElementById('resetPointsBtn').onclick = resetScores;
-        document.getElementById('resetTeamsBtn').onclick = resetTeams;
-        document.getElementById('manualSave').onclick = saveMatch;
-
-        document.getElementById('generate').onclick = () => {
-            playSound(700, 'sine', 0.1, 0.5);
-            let pool = document.getElementById('names').value.split(/[\n,]+/).map(n => n.trim()).filter(n => n !== "");
-            if (pool.length < 2) return;
-
+        window.initShuffle = () => {
+            beep(523, 0.1);
+            let names = document.getElementById('nameInput').value.split(',').map(n => n.trim()).filter(n => n);
+            const totalPlayers = names.length;
+            const squadList = document.getElementById('squad-list');
+            squadList.innerHTML = '';
+            
+            let pairs = [];
             let resting = [];
-            const yIdx = pool.findIndex(n => n.toLowerCase() === 'yuvraj');
-            if (yIdx !== -1 && Math.random() < 0.5) resting.push(pool.splice(yIdx, 1)[0]);
 
-            pool.sort(() => Math.random() - 0.5);
-            let teams = [];
-            while (pool.length >= 2) {
-                let p1 = pool[0], p2Idx = 1;
-                if (isGatikConflict(p1, pool[p2Idx])) {
-                    for (let j = 2; j < pool.length; j++) {
-                        if (!isGatikConflict(p1, pool[j])) { p2Idx = j; break; }
+            // Special Condition for Yuvraj: 100% resting on specific counts
+            if (names.includes("Yuvraj") && [5, 7, 9, 11, 13].includes(totalPlayers)) {
+                resting.push("Yuvraj");
+                names = names.filter(n => n !== "Yuvraj");
+            } 
+            // Special Condition for Yuvraj: Force pair with Gatik on even counts
+            else if (names.includes("Yuvraj") && names.includes("Gatik") && [4, 6, 8, 10, 12].includes(totalPlayers)) {
+                pairs.push("Yuvraj & Gatik");
+                names = names.filter(n => n !== "Yuvraj" && n !== "Gatik");
+            }
+
+            // Shuffle the rest
+            names.sort(() => Math.random() - 0.5);
+
+            // Gatik Restriction: Cannot pair with Shubham or Kushagra
+            while (names.length >= 2) {
+                let p1 = names[0];
+                let foundMatch = false;
+
+                for (let i = 1; i < names.length; i++) {
+                    let p2 = names[i];
+                    let isGatikConflict = (p1 === "Gatik" || p2 === "Gatik") && (p1 === "Shubham" || p2 === "Shubham" || p1 === "Kushagra" || p2 === "Kushagra");
+                    
+                    if (!isGatikConflict) {
+                        pairs.push(`${p1} & ${p2}`);
+                        names.splice(i, 1);
+                        names.splice(0, 1);
+                        foundMatch = true;
+                        break;
                     }
                 }
-                let p2 = pool.splice(p2Idx, 1)[0]; pool.splice(0, 1);
-                teams.push(`${p1} & ${p2}`);
+
+                if (!foundMatch) {
+                    resting.push(names.shift());
+                }
             }
-            if (pool.length > 0) resting.push(pool.pop());
-            
-            const grid = document.getElementById('duo-grid');
-            grid.innerHTML = '';
-            teams.forEach((pair, i) => {
-                const card = document.createElement('div');
-                card.className = 'duo-card';
-                card.innerHTML = `<strong>Team ${i+1}</strong><br>${pair}`;
-                card.onclick = () => {
-                    playSound(600, 'sine', 0.05, 0.5);
-                    const tA = document.getElementById('teamAName');
-                    const tB = document.getElementById('teamBName');
-                    if(tA.value === "Team A") { tA.value = pair; card.classList.add('selected'); }
-                    else if(tB.value === "Team B") { tB.value = pair; card.classList.add('selected'); }
+
+            // Any leftovers go to rest
+            if (names.length > 0) resting.push(...names);
+
+            // Render Duos
+            pairs.forEach(duo => {
+                let d = document.createElement('div');
+                d.className = 'chip';
+                d.innerText = duo;
+                d.onclick = () => {
+                    if(!document.getElementById('labelA').value) document.getElementById('labelA').value = duo;
+                    else if(!document.getElementById('labelB').value) document.getElementById('labelB').value = duo;
                 };
-                grid.appendChild(card);
+                squadList.appendChild(d);
             });
-            document.getElementById('extra-player').innerHTML = resting.length > 0 ? `<div class="waitlist-alert">Resting: ${resting.join(", ")}</div>` : '';
-        };
 
-        const isGatikConflict = (n1, n2) => {
-            const bad = ['kushagra', 'shubham'];
-            const names = [n1.toLowerCase(), n2.toLowerCase()];
-            return names.includes('gatik') && names.some(n => bad.includes(n));
-        };
-
-        document.getElementById('clearBtn').onclick = () => {
-            playSound(150, 'triangle', 0.6, 0.8);
-            setTimeout(() => location.reload(), 300);
-        };
-
-        onSnapshot(query(collection(db, "matches"), orderBy("timestamp", "desc")), (snap) => {
-            const tbody = document.getElementById('historyBody');
-            tbody.innerHTML = '';
-            snap.forEach((doc) => {
-                const m = doc.data();
-                const t = m.timestamp ? m.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "...";
-                tbody.innerHTML += `<tr><td>${t}</td><td>${m.teamA} vs ${m.teamB}</td><td>${m.scoreA}-${m.scoreB}</td><td class="win-tag">${m.winner}</td></tr>`;
+            // Render Resting
+            resting.forEach(player => {
+                let d = document.createElement('div');
+                d.className = 'chip';
+                d.style.borderColor = 'var(--danger)';
+                d.style.color = 'var(--danger)';
+                d.innerText = `REST: ${player}`;
+                squadList.appendChild(d);
             });
-        });
-
-        /* --- THEME --- */
-        window.setTheme = (mode) => {
-            const html = document.documentElement;
-            if (mode === 'auto') html.setAttribute('data-theme', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-            else html.setAttribute('data-theme', mode);
-            localStorage.setItem('theme-pref', mode);
         };
-        window.setTheme(localStorage.getItem('theme-pref') || 'auto');
+
+        window.finalizeCombat = () => {
+            const pA = document.getElementById('labelA').value || "TEAM A";
+            const pB = document.getElementById('labelB').value || "TEAM B";
+            if(sA === 0 && sB === 0) return;
+            const winner = sA > sB ? pA : (sB > sA ? pB : "DRAW");
+            history.unshift({ id: Date.now(), match: `${pA} (${sA}) vs ${pB} (${sB})`, winner: winner });
+            localStorage.setItem('aceFlowHistory', JSON.stringify(history));
+            document.getElementById('winner-name').innerText = winner;
+            document.getElementById('winner-popup').style.display = 'flex';
+            renderHistory(); resetMatch();
+        };
+
+        window.resetMatch = () => {
+            sA = 0; sB = 0;
+            document.getElementById('labelA').value = "";
+            document.getElementById('labelB').value = "";
+            updateUI();
+        };
+
+        function renderHistory() {
+            const container = document.getElementById('history-list');
+            container.innerHTML = history.length ? '' : '<p style="opacity:0.3; font-size:0.7rem;">NO LOGS FOUND</p>';
+            history.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `<span>${item.match}</span><span class="del-btn" onclick="deleteHistory(${item.id})">✕</span>`;
+                container.appendChild(div);
+            });
+        }
+
+        window.deleteHistory = (id) => {
+            history = history.filter(h => h.id !== id);
+            localStorage.setItem('aceFlowHistory', JSON.stringify(history));
+            renderHistory();
+        };
+
+        document.getElementById('auth-overlay').onclick = () => document.getElementById('pinInput').focus();
     </script>
 </body>
 </html>
