@@ -7,68 +7,301 @@
     <style>
         /* --- Dynamic Theme Variables --- */
         :root {
-            /* Light Mode (Default) */
-            --primary: #2c3e50;
-            --accent: #27ae60;
-            --danger: #e74c3c;
-            --bg: #ecf0f1;
-            --card-bg: #ffffff;
-            --text: #2c3e50;
-            --input-border: #dddddd;
-            --secondary-btn: #95a5a6;
-            --duo-bg: #f9f9f9;
+            --primary: #2c3e50; --accent: #27ae60; --danger: #e74c3c;
+            --bg: #ecf0f1; --card-bg: #ffffff; --text: #2c3e50;
+            --input-border: #dddddd; --secondary-btn: #95a5a6; --duo-bg: #f9f9f9;
         }
 
         [data-theme="dark"] {
-            /* Dark Mode */
-            --primary: #1a1a1a;
-            --accent: #2ecc71;
-            --danger: #ff4757;
-            --bg: #121212;
-            --card-bg: #1e1e1e;
-            --text: #f1f1f1;
-            --input-border: #444444;
-            --secondary-btn: #4a4a4a;
-            --duo-bg: #2d2d2d;
+            --primary: #1a1a1a; --accent: #2ecc71; --danger: #ff4757;
+            --bg: #121212; --card-bg: #1e1e1e; --text: #f1f1f1;
+            --input-border: #444444; --secondary-btn: #4a4a4a; --duo-bg: #2d2d2d;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: var(--bg);
-            color: var(--text);
-            transition: background 0.3s, color 0.3s;
+        body { font-family: 'Segoe UI', sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background-color: var(--bg); color: var(--text); transition: 0.3s; }
+        .theme-controls { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px; }
+        .theme-btn { background: var(--card-bg); border: 1px solid var(--input-border); color: var(--text); padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 0.8rem; }
+        .theme-btn.active { border-color: var(--accent); background: var(--accent); color: white; }
+
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-card { background: var(--card-bg); padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .login-card input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid var(--input-border); border-radius: 6px; background: var(--bg); color: var(--text); }
+        
+        .card { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h1, h2 { text-align: center; margin-top: 0; }
+        
+        textarea { width: 100%; height: 80px; padding: 12px; border: 2px solid var(--input-border); border-radius: 8px; background: var(--bg); color: var(--text); margin-bottom: 10px; }
+        .controls-row { display: flex; gap: 10px; margin-bottom: 15px; }
+        button { flex: 1; padding: 12px; background-color: var(--accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        button.secondary { background-color: var(--secondary-btn); }
+
+        #duo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        .duo-card { background: var(--duo-bg); border: 2px solid var(--input-border); padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; color: var(--text); }
+        .duo-card.selected { border-color: var(--accent); background: rgba(46, 204, 113, 0.2); }
+
+        .scoreboard { display: flex; justify-content: space-around; align-items: center; background: var(--bg); padding: 20px; border-radius: 10px; border: 2px solid var(--input-border); }
+        .score-display { font-size: 3.5rem; font-weight: 800; margin: 10px 0; }
+        .team-input { font-size: 1.1rem; font-weight: bold; text-align: center; border: none; border-bottom: 2px solid var(--input-border); width: 100%; background: transparent; color: var(--text); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--input-border); }
+        th { background-color: var(--primary); color: white; }
+        .win-tag { color: var(--accent); font-weight: bold; }
+        .waitlist-alert { background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; text-align: center; margin-top: 10px;}
+
+        footer { text-align: center; margin-top: 40px; padding: 20px; opacity: 0.8; border-top: 1px solid var(--input-border); }
+        .highlight-name { color: #d4af37; font-weight: bold; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+    <div class="theme-controls">
+        <button class="theme-btn" onclick="setTheme('light')" id="btn-light">☀️ Light</button>
+        <button class="theme-btn" onclick="setTheme('dark')" id="btn-dark">🌙 Dark</button>
+        <button class="theme-btn" onclick="setTheme('auto')" id="btn-auto">🔄 Auto</button>
+    </div>
+
+    <div id="login-overlay">
+        <div class="login-card">
+            <h2>🏸 Pro Manager Login</h2>
+            <input type="email" id="loginEmail" placeholder="Admin Email">
+            <input type="password" id="loginPass" placeholder="Password">
+            <button id="btnLogin">Login</button>
+            <p id="loginError" style="color: var(--danger); font-size: 0.8rem; margin-top:10px;"></p>
+        </div>
+    </div>
+
+    <h1>🏸 Badminton Pro Manager</h1>
+
+    <div class="card">
+        <h2>1. Generate Teams</h2>
+        <textarea id="names" placeholder="Gatik, Kushagra, Shubham, Yuvraj..."></textarea>
+        <div class="controls-row">
+            <button id="generate">Shuffle & Create Teams</button>
+            <button id="clearBtn" class="secondary">Reset Session</button>
+        </div>
+        <div id="duo-grid"></div>
+        <div id="extra-player"></div>
+    </div>
+
+    <div class="card">
+        <h2>2. Live Match Tracker</h2>
+        <div class="controls-row" style="margin-bottom: 10px;">
+            <button class="secondary" id="resetPointsBtn" style="font-size: 0.75rem; padding: 8px;">Reset Points</button>
+            <button class="secondary" id="resetTeamsBtn" style="font-size: 0.75rem; padding: 8px;">Reset Teams</button>
+        </div>
+        <div class="scoreboard">
+            <div class="team">
+                <input type="text" id="teamAName" class="team-input" value="Team A" readonly>
+                <div class="score-display" id="scoreA">0</div>
+                <div style="display:flex; gap:5px; justify-content:center;">
+                    <button style="background: var(--danger); width:45px;" id="minusA">-</button>
+                    <button style="background: var(--accent); width:45px;" id="plusA">+</button>
+                </div>
+            </div>
+            <div style="font-weight: bold; opacity: 0.5;">VS</div>
+            <div class="team">
+                <input type="text" id="teamBName" class="team-input" value="Team B" readonly>
+                <div class="score-display" id="scoreB">0</div>
+                <div style="display:flex; gap:5px; justify-content:center;">
+                    <button style="background: var(--danger); width:45px;" id="minusB">-</button>
+                    <button style="background: var(--accent); width:45px;" id="plusB">+</button>
+                </div>
+            </div>
+        </div>
+        <button id="manualSave" class="secondary" style="margin-top:15px; width:100%;">Save Match</button>
+    </div>
+
+    <div class="card">
+        <h2>3. Global Session History</h2>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr><th>Time</th><th>Matchup</th><th>Score</th><th>Winner</th></tr>
+                </thead>
+                <tbody id="historyBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Copyright by <span class="highlight-name">Kushagra</span>. All Rights Reserved.</p>
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAR7u_Zpb14QmT1wVxUCTzxdbfliobthFQ",
+            authDomain: "badminton-pro-ss.firebaseapp.com",
+            projectId: "badminton-pro-ss",
+            storageBucket: "badminton-pro-ss.firebasestorage.app",
+            messagingSenderId: "293937701170",
+            appId: "1:293937701170:web:40e1d3be4392a35c6c372b"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        /* --- AUDIO ENGINE --- */
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(freq, type = 'sine', duration = 0.1, volume = 0.5) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + duration);
         }
 
-        /* --- Theme Switcher UI --- */
-        .theme-controls {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .theme-btn {
-            background: var(--card-bg);
-            border: 1px solid var(--input-border);
-            color: var(--text);
-            padding: 5px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            flex: none;
-        }
-        .theme-btn.active {
-            border-color: var(--accent);
-            background: var(--accent);
-            color: white;
+        function playSaveSound() {
+            playSound(523.25, 'sine', 0.15, 0.4); // C5
+            setTimeout(() => playSound(659.25, 'sine', 0.15, 0.4), 100); // E5
+            setTimeout(() => playSound(783.99, 'sine', 0.3, 0.4), 200); // G5
         }
 
-        /* --- Existing Styles Updated for Variables --- */
-        #login-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+        /* --- STATE --- */
+        let scoreA = 0, scoreB = 0;
+
+        const updateUI = () => {
+            document.getElementById('scoreA').innerText = scoreA;
+            document.getElementById('scoreB').innerText = scoreB;
+        };
+
+        const changeScore = (team, val) => {
+            if (val > 0) playSound(880, 'sine', 0.15, 0.7); 
+            else playSound(220, 'triangle', 0.2, 0.7);
+            
+            if (team === 'A') scoreA = Math.max(0, scoreA + val);
+            else scoreB = Math.max(0, scoreB + val);
+            updateUI();
+        };
+
+        const resetScores = () => {
+            playSound(500, 'square', 0.15, 0.5);
+            scoreA = 0; scoreB = 0;
+            updateUI();
+        };
+
+        const resetTeams = () => {
+            playSound(300, 'sawtooth', 0.2, 0.5);
+            document.getElementById('teamAName').value = "Team A";
+            document.getElementById('teamBName').value = "Team B";
+            document.querySelectorAll('.duo-card').forEach(c => c.classList.remove('selected'));
+        };
+
+        async function saveMatch() {
+            const nA = document.getElementById('teamAName').value;
+            const nB = document.getElementById('teamBName').value;
+            if (nA === "Team A" || nB === "Team B") return;
+
+            playSaveSound(); // New Save Sound Effect
+
+            const winner = scoreA >= scoreB ? nA : nB;
+            try {
+                await addDoc(collection(db, "matches"), {
+                    teamA: nA, teamB: nB, scoreA, scoreB, winner, timestamp: serverTimestamp()
+                });
+                resetScores();
+                resetTeams();
+            } catch (e) { console.error(e); }
+        }
+
+        /* --- DOM EVENTS --- */
+        document.getElementById('plusA').onclick = () => changeScore('A', 1);
+        document.getElementById('minusA').onclick = () => changeScore('A', -1);
+        document.getElementById('plusB').onclick = () => changeScore('B', 1);
+        document.getElementById('minusB').onclick = () => changeScore('B', -1);
+        document.getElementById('resetPointsBtn').onclick = resetScores;
+        document.getElementById('resetTeamsBtn').onclick = resetTeams;
+        document.getElementById('manualSave').onclick = saveMatch;
+
+        document.getElementById('btnLogin').onclick = async () => {
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPass').value;
+            try { await signInWithEmailAndPassword(auth, email, pass); } 
+            catch (e) { document.getElementById('loginError').innerText = "Login Failed"; }
+        };
+        onAuthStateChanged(auth, (user) => { document.getElementById('login-overlay').style.display = user ? 'none' : 'flex'; });
+
+        document.getElementById('generate').onclick = () => {
+            playSound(700, 'sine', 0.1, 0.5);
+            let pool = document.getElementById('names').value.split(/[\n,]+/).map(n => n.trim()).filter(n => n !== "");
+            if (pool.length < 2) return;
+
+            let resting = [];
+            const yIdx = pool.findIndex(n => n.toLowerCase() === 'yuvraj');
+            if (yIdx !== -1 && Math.random() < 0.5) resting.push(pool.splice(yIdx, 1)[0]);
+
+            pool.sort(() => Math.random() - 0.5);
+            let teams = [];
+            while (pool.length >= 2) {
+                let p1 = pool[0], p2Idx = 1;
+                if (isGatikConflict(p1, pool[p2Idx])) {
+                    for (let j = 2; j < pool.length; j++) {
+                        if (!isGatikConflict(p1, pool[j])) { p2Idx = j; break; }
+                    }
+                }
+                let p2 = pool.splice(p2Idx, 1)[0];
+                pool.splice(0, 1);
+                teams.push(`${p1} & ${p2}`);
+            }
+            if (pool.length > 0) resting.push(pool.pop());
+            
+            const grid = document.getElementById('duo-grid');
+            grid.innerHTML = '';
+            teams.forEach((pair, i) => {
+                const card = document.createElement('div');
+                card.className = 'duo-card';
+                card.innerHTML = `<strong>Team ${i+1}</strong><br>${pair}`;
+                card.onclick = () => {
+                    playSound(600, 'sine', 0.05, 0.5);
+                    const tA = document.getElementById('teamAName');
+                    const tB = document.getElementById('teamBName');
+                    if(tA.value === "Team A") { tA.value = pair; card.classList.add('selected'); }
+                    else if(tB.value === "Team B") { tB.value = pair; card.classList.add('selected'); }
+                };
+                grid.appendChild(card);
+            });
+            document.getElementById('extra-player').innerHTML = resting.length > 0 ? `<div class="waitlist-alert">Resting: ${resting.join(", ")}</div>` : '';
+        };
+
+        const isGatikConflict = (n1, n2) => {
+            const bad = ['kushagra', 'shubham'];
+            const names = [n1.toLowerCase(), n2.toLowerCase()];
+            return names.includes('gatik') && names.some(n => bad.includes(n));
+        };
+
+        document.getElementById('clearBtn').onclick = () => {
+            playSound(150, 'triangle', 0.6, 0.8);
+            setTimeout(() => location.reload(), 300);
+        };
+
+        onSnapshot(query(collection(db, "matches"), orderBy("timestamp", "desc")), (snap) => {
+            const tbody = document.getElementById('historyBody');
+            tbody.innerHTML = '';
+            snap.forEach((doc) => {
+                const m = doc.data();
+                const t = m.timestamp ? m.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "...";
+                tbody.innerHTML += `<tr><td>${t}</td><td>${m.teamA} vs ${m.teamB}</td><td>${m.scoreA}-${m.scoreB}</td><td class="win-tag">${m.winner}</td></tr>`;
+            });
+        });
+
+        window.setTheme = (mode) => {
+            const html = document.documentElement;
+            if (mode === 'auto') html.setAttribute('data-theme', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            else html.setAttribute('data-theme', mode);
+            localStorage.setItem('theme-pref', mode);
+        };
+    </script>
+</body>
+</html>
             background: var(--primary);
             z-index: 2000;
             display: flex; align-items: center; justify-content: center;
