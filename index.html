@@ -7,135 +7,101 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #020617; --card: #0f172a; --accent: #38bdf8;
+            --bg: #000000; 
+            --card: #050505; 
+            --accent: #a855f7; 
             --secondary: #94a3b8; --danger: #f43f5e; --text: #f8fafc; 
-            --border: #1e293b; --input: #020617; --success: #22c55e;
-            /* Player Colors */
-            --clr-shubham: #ff4d4d;
-            --clr-kushagra: #ffcc00;
-            --clr-vidhu: #2ecc71;
-            --clr-taru: #f39c12;
-            --clr-gaurav: #3498db;
-        }
-
-        /* --- VIDEO BACKGROUND STYLES --- */
-        #bg-video {
-            position: fixed;
-            right: 0;
-            bottom: 0;
-            min-width: 100%;
-            min-height: 100%;
-            z-index: -2;
-            object-fit: cover;
-            filter: brightness(0.5);
-        }
-
-        .video-overlay {
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(circle, rgba(2, 6, 23, 0.2) 0%, rgba(2, 6, 23, 0.8) 100%);
-            z-index: -1;
-            pointer-events: none;
+            --border: #1e293b; --input: #000000; --success: #22c55e;
+            --clr-shubham: #ff4d4d; --clr-kushagra: #ffcc00; --clr-vidhu: #2ecc71; --clr-taru: #f39c12; --clr-gaurav: #3498db;
         }
 
         * { box-sizing: border-box; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; overflow-x: hidden; min-height: 100vh; }
 
-        /* --- AUTH SCREEN --- */
-        #auth-overlay { 
-            position: fixed; inset: 0; background: var(--bg); z-index: 9000; 
-            display: flex; align-items: center; justify-content: center; flex-direction: column;
-            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+        @keyframes neon-pulse-slow {
+            0% { border-color: #1e293b; box-shadow: 0 0 5px rgba(168, 85, 247, 0.05); }
+            50% { border-color: var(--accent); box-shadow: 0 0 35px rgba(168, 85, 247, 0.4); } 
+            100% { border-color: #1e293b; box-shadow: 0 0 5px rgba(168, 85, 247, 0.05); }
         }
-        .auth-card { text-align: center; width: 100%; max-width: 400px; animation: fadeInScale 0.8s ease; }
-        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-        
-        .pin-dot-container { display: flex; gap: 20px; justify-content: center; margin-top: 40px; }
-        .pin-dot { width: 18px; height: 18px; border-radius: 4px; border: 2px solid var(--border); transform: rotate(45deg); }
+
+        /* --- PIN ANIMATIONS & STYLES --- */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        .pin-dot-container { display: flex; gap: 25px; justify-content: center; margin-top: 50px; }
+        .pin-dot { 
+            width: 22px; 
+            height: 22px; 
+            border-radius: 6px; 
+            border: 3px solid #1e293b; 
+            transform: rotate(45deg); 
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
         .pin-dot.active { 
-            background: var(--accent); border-color: var(--accent); 
-            box-shadow: 0 0 20px var(--accent); transform: rotate(45deg) scale(1.2); 
+            background: var(--accent); 
+            border-color: var(--accent); 
+            box-shadow: 0 0 25px var(--accent), 0 0 10px var(--accent); 
+            transform: rotate(45deg) scale(1.3); 
         }
 
-        /* --- WELCOME SCREEN --- */
-        #welcome-overlay { 
-            display: none; position: fixed; inset: 0; z-index: 9001; 
-            background: #000; align-items: center; justify-content: center; flex-direction: column; 
+        /* --- STREAK & KINGSLAYER ANIMATIONS --- */
+        @keyframes gold-shimmer {
+            0% { border-color: #ffd700; box-shadow: 0 0 10px #ffd700; }
+            50% { border-color: #fff; box-shadow: 0 0 25px #ffd700, inset 0 0 10px #ffd700; }
+            100% { border-color: #ffd700; box-shadow: 0 0 10px #ffd700; }
         }
-        .welcome-text { 
-            font-family: 'Space Grotesk'; font-size: 3.5rem; font-weight: 800; 
-            background: linear-gradient(to right, #fff, var(--accent), #fff);
-            background-size: 200% auto;
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            animation: shine 2s infinite linear, zoomIn 0.5s ease;
+
+        @keyframes silver-glitch {
+            0% { border-color: #e2e8f0; transform: skewX(0deg); }
+            20% { border-color: #fff; box-shadow: 0 0 20px #94a3b8; transform: skewX(-1deg); }
+            40% { transform: skewX(1deg); }
+            100% { border-color: #e2e8f0; transform: skewX(0deg); }
         }
+
+        .card { background: var(--card); border: 1px solid var(--border); padding: 24px; border-radius: 28px; margin-bottom: 20px; animation: neon-pulse-slow 6s infinite ease-in-out; }
+        #auth-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 9000; display: flex; align-items: center; justify-content: center; flex-direction: column; cursor: pointer; }
+        
+        #welcome-overlay { display: none; position: fixed; inset: 0; z-index: 9001; background: #000; align-items: center; justify-content: center; flex-direction: column; }
+        .welcome-text { font-family: 'Space Grotesk'; font-size: 3.5rem; font-weight: 800; background: linear-gradient(to right, #fff, var(--accent), #fff); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 2s infinite linear; }
         @keyframes shine { 0% { background-position: 0%; } 100% { background-position: 200%; } }
-        @keyframes zoomIn { from { transform: scale(2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* --- MAIN APP --- */
         #main-app { display: none; max-width: 500px; margin: 0 auto; padding-bottom: 50px; }
         h1, h2, h3 { font-family: 'Space Grotesk'; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
         
-        /* Adjusted Card for Visibility */
-        .card { 
-            background: rgba(15, 23, 42, 0.8); 
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--border); 
-            padding: 24px; 
-            border-radius: 28px; 
-            margin-bottom: 20px; 
-        }
-        
-        /* --- GLASSY PLAYER CHIPS --- */
-        .chip { 
-            background: rgba(255, 255, 255, 0.05); 
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-            padding: 10px 14px; border-radius: 12px; font-size: 0.75rem; 
-            cursor: pointer; color: var(--text); display: inline-block; margin: 4px;
-            font-weight: 700;
-        }
+        .chip { background: rgba(168, 85, 247, 0.05); border: 1px solid var(--accent); padding: 10px 14px; border-radius: 12px; font-size: 0.75rem; cursor: pointer; color: var(--text); display: inline-block; margin: 4px; font-weight: 700; }
+        .chip-shubham { border-color: var(--clr-shubham); color: var(--clr-shubham); }
+        .chip-kushagra { border-color: var(--clr-kushagra); color: var(--clr-kushagra); }
+        .chip-vidhu { border-color: var(--clr-vidhu); color: var(--clr-vidhu); }
+        .chip-taru { border-color: var(--clr-taru); color: var(--clr-taru); }
+        .chip-gaurav { border-color: var(--clr-gaurav); color: var(--clr-gaurav); }
 
-        .chip-shubham { border-color: var(--clr-shubham); box-shadow: 0 0 15px rgba(255, 77, 77, 0.3); color: var(--clr-shubham); }
-        .chip-kushagra { border-color: var(--clr-kushagra); box-shadow: 0 0 15px rgba(255, 204, 0, 0.3); color: var(--clr-kushagra); }
-        .chip-vidhu { border-color: var(--clr-vidhu); box-shadow: 0 0 15px rgba(46, 204, 113, 0.3); color: var(--clr-vidhu); }
-        .chip-taru { border-color: var(--clr-taru); box-shadow: 0 0 15px rgba(243, 156, 18, 0.3); color: var(--clr-taru); }
-        .chip-gaurav { border-color: var(--clr-gaurav); box-shadow: 0 0 15px rgba(52, 152, 219, 0.3); color: var(--clr-gaurav); }
-
-        /* --- COMBAT UI --- */
         .combat-grid { display: grid; grid-template-columns: 1fr 40px 1fr; align-items: stretch; gap: 12px; }
-        .team-box { padding: 25px 10px; border-radius: 20px; border: 2px solid var(--border); background: rgba(0,0,0,0.3); text-align: center; position: relative; overflow: hidden; }
-        .team-label-input { background:none; border:none; color: var(--accent); text-align:center; width:100%; font-size: 1.2rem; font-weight:800; font-family: 'Space Grotesk'; margin-bottom: 5px; pointer-events: none;}
+        .team-box { padding: 25px 10px; border-radius: 20px; border: 2px solid var(--border); background: #000; text-align: center; position: relative; }
+        .team-label-input { background:none; border:none; color: var(--accent); text-align:center; width:100%; font-size: 1.2rem; font-weight:800; font-family: 'Space Grotesk'; pointer-events: none; text-shadow: 0 0 8px var(--accent); }
+        
+        .leading-glow { border-color: var(--success) !important; box-shadow: 0 0 30px rgba(34, 197, 94, 0.4); }
+        .score-huge { font-family: 'Space Grotesk'; font-size: 5rem; font-weight: 700; height: 80px; display: flex; align-items: center; justify-content: center; }
 
-        .leading-glow { border-color: var(--success) !important; box-shadow: 0 0 30px rgba(34, 197, 94, 0.3); transform: translateY(-5px); }
-        .lead-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--success); color: black; font-size: 0.6rem; font-weight: 900; padding: 2px 10px; border-radius: 10px; display: none; z-index: 10; }
-        .leading-glow .lead-badge { display: block; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; background: #080808; padding: 12px 15px; border-radius: 12px; margin-bottom: 8px; font-size: 0.85rem; border: 1px solid var(--border); }
+        .streak-gold { border: 2px solid #ffd700 !important; animation: gold-shimmer 2s infinite !important; background: linear-gradient(90deg, #000, #1a1600) !important; }
+        .streak-gold span { color: #ffd700 !important; font-weight: 800; }
+        .kingslayer-silver { border: 2px solid #94a3b8 !important; animation: silver-glitch 1s infinite !important; background: linear-gradient(90deg, #000, #0f172a) !important; }
+        .kingslayer-silver span { color: #fff !important; font-weight: 800; }
 
-        .score-huge { font-family: 'Space Grotesk'; font-size: 5rem; font-weight: 700; color: var(--text); margin: 5px 0; line-height: 1; height: 80px; display: flex; align-items: center; justify-content: center; }
-        @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes slideDown { from { transform: translateY(-40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .score-up { animation: slideUp 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); color: var(--accent) !important; }
-        .score-down { animation: slideDown 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); color: var(--danger) !important; }
-
-        /* --- MISC --- */
-        .history-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px 15px; border-radius: 12px; margin-bottom: 8px; font-size: 0.85rem; border: 1px solid var(--border); }
+        .badge { font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: 900; vertical-align: middle; }
         .del-btn { color: var(--danger); font-weight: 800; padding: 5px 10px; cursor: pointer; }
-        textarea { width: 100%; background: var(--input); border: 1px solid var(--border); border-radius: 12px; color: white; padding: 15px; font-family: inherit; margin-bottom: 15px; resize: none; }
-        button { padding: 16px; border-radius: 14px; border: none; font-weight: 800; cursor: pointer; background: var(--accent); color: var(--bg); width: 100%; font-size: 0.9rem; }
-        #winner-popup { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.95); z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
+        textarea { width: 100%; background: var(--input); border: 1px solid var(--border); border-radius: 12px; color: white; padding: 15px; margin-bottom: 15px; resize: none; }
+        button { padding: 16px; border-radius: 14px; border: none; font-weight: 800; cursor: pointer; background: var(--accent); color: #fff; width: 100%; }
+        #winner-popup { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.98); z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
     </style>
 </head>
 <body>
 
-    <video autoplay muted loop id="bg-video">
-        <source src="https://media.istockphoto.com/id/2245081368/video/4k-abstract-lines-background-loopable.mp4?s=mp4-640x640-is&k=20&c=NIFax8A_NZ6IrCNE4n8DfK0Od6MVURyYXDaDsnWn8uI=">
-    </video>
-    <div class="video-overlay"></div>
-
     <div id="auth-overlay">
-        <div class="auth-card">
+        <div class="auth-card" style="text-align:center">
             <h1 style="font-size: 3rem; margin-bottom: 5px; color: white;">ACE <span style="color: var(--accent);">FLOW</span></h1>
             <p style="color: var(--secondary); letter-spacing: 3px; font-size: 0.7rem;">ENTER ACCESS PROTOCOL</p>
             <div class="pin-dot-container" id="pinDots">
@@ -147,21 +113,20 @@
 
     <div id="welcome-overlay">
         <div class="welcome-text">WELCOME TO ACE FLOW</div>
-        <div style="color: var(--accent); letter-spacing: 8px; margin-top: 20px; opacity: 0.5;">AUTHORIZED ACCESS</div>
     </div>
 
     <div id="winner-popup" onclick="this.style.display='none'">
         <div style="text-align: center;">
             <p style="color: var(--accent); font-weight: 800; letter-spacing: 4px;">VICTORY DECLARED</p>
-            <h1 id="winner-name" style="font-size: 4rem; margin: 20px 0; color: #fff;">-</h1>
+            <h1 id="winner-name" style="font-size: 4rem; margin: 20px 0; color: #fff; text-shadow: 0 0 30px var(--accent);">-</h1>
             <p style="opacity: 0.5;">TAP TO DISMISS</p>
         </div>
     </div>
 
     <div id="main-app">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-            <h1 style="font-size: 1.2rem; margin:0;">ACE FLOW <span style="font-weight: 400; opacity: 0.5;">v2.0</span></h1>
-            <div id="status-dot" style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; box-shadow: 0 0 10px var(--success);"></div>
+            <h1 style="font-size: 1.2rem; margin:0;">ACE FLOW <span style="font-weight: 400; opacity: 0.5;">v2.1</span></h1>
+            <div id="status-dot" style="width: 8px; height: 8px; background: var(--success); border-radius: 50%;"></div>
         </div>
 
         <div class="card">
@@ -173,33 +138,31 @@
                 <div class="chip chip-gaurav" onclick="addName('Gaurav')">+ GAURAV</div>
                 <div class="chip chip-taru" onclick="addName('Taru')">+ TARU</div>
             </div>
-            <textarea id="nameInput" rows="2" placeholder="Enter players (comma separated)..."></textarea>
+            <textarea id="nameInput" rows="2" placeholder="Enter players..."></textarea>
             <button onclick="initShuffle()">SHUFFLE DUOS</button>
             <div id="squad-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top:15px;"></div>
         </div>
 
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h2 style="font-size: 0.8rem; opacity: 0.6;">02. Score Counter </h2>
-                <span onclick="resetMatch()" style="font-size: 0.6rem; color: var(--danger); font-weight: 800; cursor: pointer;">RESET MATCH</span>
+                <h2 style="font-size: 0.8rem; opacity: 0.6;">02. SCORE COUNTER </h2>
+                <span onclick="resetMatch()" style="font-size: 0.6rem; color: var(--danger); font-weight: 800; cursor: pointer;">RESET</span>
             </div>
             <div class="combat-grid">
                 <div id="boxA" class="team-box">
-                    <div class="lead-badge">IN LEAD</div>
                     <input type="text" id="labelA" class="team-label-input" placeholder="TEAM A" readonly>
                     <div class="score-huge" id="scoreA">00</div>
                     <div style="display:flex; gap:6px">
-                        <button style="background:var(--border); color:white; flex:1;" onclick="updateScore('A', -1)">-</button>
+                        <button style="background:var(--border); flex:1;" onclick="updateScore('A', -1)">-</button>
                         <button style="flex:2;" onclick="updateScore('A', 1)">+</button>
                     </div>
                 </div>
                 <div style="display: flex; align-items: center; justify-content: center; font-weight: 900; opacity: 0.2;">VS</div>
                 <div id="boxB" class="team-box">
-                    <div class="lead-badge">IN LEAD</div>
                     <input type="text" id="labelB" class="team-label-input" placeholder="TEAM B" readonly>
                     <div class="score-huge" id="scoreB">00</div>
                     <div style="display:flex; gap:6px">
-                        <button style="background:var(--border); color:white; flex:1;" onclick="updateScore('B', -1)">-</button>
+                        <button style="background:var(--border); flex:1;" onclick="updateScore('B', -1)">-</button>
                         <button style="flex:2;" onclick="updateScore('B', 1)">+</button>
                     </div>
                 </div>
@@ -211,12 +174,6 @@
             <h2 style="font-size: 0.8rem; opacity: 0.6;">03. COMBAT HISTORY</h2>
             <div id="history-list"></div>
         </div>
-
-        <div style="text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid var(--border);">
-            <p style="font-family: 'Space Grotesk'; font-size: 0.7rem; letter-spacing: 4px; color: var(--secondary); margin: 0;">
-                © 2026 PROTOCOL BY <span style="color: var(--accent); font-weight: 800; text-shadow: 0 0 10px var(--accent);">CYPHER</span>
-            </p>
-        </div>
     </div>
 
     <script>
@@ -227,50 +184,50 @@
         function beep(freq, dur=0.1) {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.frequency.value = freq;
-            gain.gain.value = 0.05;
+            osc.frequency.value = freq; gain.gain.value = 0.05;
             osc.connect(gain); gain.connect(audioCtx.destination);
             osc.start(); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + dur);
             osc.stop(audioCtx.currentTime + dur);
         }
 
+        // --- UPDATED PIN LOGIC ---
         function updateDots() {
             const val = document.getElementById('pinInput').value;
             const dots = document.querySelectorAll('.pin-dot');
+            const authorizedCodes = ["1234", "5678", "9999", "0000"]; // Added more codes
+
             dots.forEach((dot, i) => dot.classList.toggle('active', i < val.length));
-            
-            if (val === "1234") {
+
+            if (authorizedCodes.includes(val)) {
                 beep(800, 0.2);
                 document.getElementById('auth-overlay').style.display = 'none';
-                const welcome = document.getElementById('welcome-overlay');
-                welcome.style.display = 'flex';
+                document.getElementById('welcome-overlay').style.display = 'flex';
                 setTimeout(() => {
-                    welcome.style.opacity = '0';
-                    setTimeout(() => {
-                        welcome.style.display = 'none';
-                        document.getElementById('main-app').style.display = 'block';
-                        renderHistory();
-                    }, 500);
+                    document.getElementById('welcome-overlay').style.display = 'none';
+                    document.getElementById('main-app').style.display = 'block';
+                    renderHistory();
                 }, 2000);
             } else if (val.length >= 4) {
-                document.getElementById('pinInput').value = "";
-                dots.forEach(dot => dot.classList.remove('active'));
+                // Wrong PIN sequence
                 beep(100, 0.3);
+                const container = document.getElementById('pinDots');
+                container.style.animation = 'shake 0.4s';
+                setTimeout(() => {
+                    container.style.animation = '';
+                    document.getElementById('pinInput').value = "";
+                    dots.forEach(dot => dot.classList.remove('active'));
+                }, 400);
             }
         }
 
         window.addName = (n) => {
-            beep(440, 0.05);
             const i = document.getElementById('nameInput');
             if(!i.value.includes(n)) i.value += (i.value ? ', ' : '') + n;
+            beep(440, 0.05);
         };
 
         window.updateScore = (team, val) => {
-            const el = document.getElementById('score' + team);
-            el.classList.remove('score-up', 'score-down');
-            void el.offsetWidth; 
             if(team === 'A') sA = Math.max(0, sA + val); else sB = Math.max(0, sB + val);
-            el.classList.add(val > 0 ? 'score-up' : 'score-down');
             beep(val > 0 ? 600 : 300, 0.1);
             updateUI();
         };
@@ -288,69 +245,38 @@
             const totalPlayers = names.length;
             const squadList = document.getElementById('squad-list');
             squadList.innerHTML = '';
-            
-            let pairs = [];
-            let resting = [];
+            let pairs = [], resting = [];
 
-            // Special Condition for Yuvraj: 100% resting on specific counts
             if (names.includes("Yuvraj") && [5, 7, 9, 11, 13].includes(totalPlayers)) {
-                resting.push("Yuvraj");
-                names = names.filter(n => n !== "Yuvraj");
-            } 
-            // Special Condition for Yuvraj: Force pair with Gatik on even counts
-            else if (names.includes("Yuvraj") && names.includes("Gatik") && [4, 6, 8, 10, 12].includes(totalPlayers)) {
-                pairs.push("Yuvraj & Gatik");
-                names = names.filter(n => n !== "Yuvraj" && n !== "Gatik");
+                resting.push("Yuvraj"); names = names.filter(n => n !== "Yuvraj");
+            } else if (names.includes("Yuvraj") && names.includes("Gatik") && [4, 6, 8, 10, 12].includes(totalPlayers)) {
+                pairs.push("Yuvraj & Gatik"); names = names.filter(n => n !== "Yuvraj" && n !== "Gatik");
             }
 
-            // Shuffle the rest
             names.sort(() => Math.random() - 0.5);
-
-            // Gatik Restriction: Cannot pair with Shubham or Kushagra
             while (names.length >= 2) {
-                let p1 = names[0];
-                let foundMatch = false;
-
+                let p1 = names[0], matchFound = false;
                 for (let i = 1; i < names.length; i++) {
                     let p2 = names[i];
-                    let isGatikConflict = (p1 === "Gatik" || p2 === "Gatik") && (p1 === "Shubham" || p2 === "Shubham" || p1 === "Kushagra" || p2 === "Kushagra");
-                    
-                    if (!isGatikConflict) {
-                        pairs.push(`${p1} & ${p2}`);
-                        names.splice(i, 1);
-                        names.splice(0, 1);
-                        foundMatch = true;
-                        break;
+                    let conflict = (p1 === "Gatik" || p2 === "Gatik") && (["Shubham", "Kushagra"].includes(p1) || ["Shubham", "Kushagra"].includes(p2));
+                    if (!conflict) {
+                        pairs.push(`${p1} & ${p2}`); names.splice(i, 1); names.splice(0, 1);
+                        matchFound = true; break;
                     }
                 }
-
-                if (!foundMatch) {
-                    resting.push(names.shift());
-                }
+                if (!matchFound) resting.push(names.shift());
             }
-
-            // Any leftovers go to rest
-            if (names.length > 0) resting.push(...names);
-
-            // Render Duos
+            resting.push(...names);
             pairs.forEach(duo => {
-                let d = document.createElement('div');
-                d.className = 'chip';
-                d.innerText = duo;
+                let d = document.createElement('div'); d.className = 'chip'; d.innerText = duo;
                 d.onclick = () => {
                     if(!document.getElementById('labelA').value) document.getElementById('labelA').value = duo;
                     else if(!document.getElementById('labelB').value) document.getElementById('labelB').value = duo;
                 };
                 squadList.appendChild(d);
             });
-
-            // Render Resting
-            resting.forEach(player => {
-                let d = document.createElement('div');
-                d.className = 'chip';
-                d.style.borderColor = 'var(--danger)';
-                d.style.color = 'var(--danger)';
-                d.innerText = `REST: ${player}`;
+            resting.forEach(p => {
+                let d = document.createElement('div'); d.className = 'chip'; d.style.borderColor = 'var(--danger)'; d.innerText = `REST: ${p}`;
                 squadList.appendChild(d);
             });
         };
@@ -368,19 +294,48 @@
         };
 
         window.resetMatch = () => {
-            sA = 0; sB = 0;
-            document.getElementById('labelA').value = "";
-            document.getElementById('labelB').value = "";
-            updateUI();
+            sA = 0; sB = 0; document.getElementById('labelA').value = ""; document.getElementById('labelB').value = ""; updateUI();
         };
 
         function renderHistory() {
             const container = document.getElementById('history-list');
             container.innerHTML = history.length ? '' : '<p style="opacity:0.3; font-size:0.7rem;">NO LOGS FOUND</p>';
-            history.forEach(item => {
+            
+            let chronological = [...history].reverse();
+            let currentStreak = 0;
+            let lastWinner = "";
+            let processed = [];
+
+            chronological.forEach((item) => {
+                let isKingslayer = false;
+                if (item.winner !== "DRAW") {
+                    if (item.winner === lastWinner) {
+                        currentStreak++;
+                    } else {
+                        if (currentStreak >= 3) isKingslayer = true;
+                        lastWinner = item.winner;
+                        currentStreak = 1;
+                    }
+                } else {
+                    currentStreak = 0; lastWinner = "";
+                }
+                processed.push({...item, streak: currentStreak, kingslayer: isKingslayer});
+            });
+
+            processed.reverse().forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'history-item';
-                div.innerHTML = `<span>${item.match}</span><span class="del-btn" onclick="deleteHistory(${item.id})">✕</span>`;
+                let badge = "";
+                
+                if (item.streak >= 3) {
+                    div.classList.add('streak-gold');
+                    badge = `<span class="badge" style="background:#ffd700; color:#000">🔥 ${item.streak} WINS</span>`;
+                } else if (item.kingslayer) {
+                    div.classList.add('kingslayer-silver');
+                    badge = `<span class="badge" style="background:#fff; color:#000">⚔️ KINGSLAYER</span>`;
+                }
+
+                div.innerHTML = `<span>${item.match} ${badge}</span><span class="del-btn" onclick="deleteHistory(${item.id})">✕</span>`;
                 container.appendChild(div);
             });
         }
